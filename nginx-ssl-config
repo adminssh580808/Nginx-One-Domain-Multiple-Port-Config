@@ -1,3 +1,5 @@
+1. use location path
+
 # the IP(s) on which your node server is running. I chose port 3000.
 upstream app_geoforce {
     server 127.0.0.1:3000;
@@ -54,3 +56,58 @@ server {
       proxy_redirect off;
     }
  }
+ 
+ 
+ 2. use server block
+ 
+server {
+    listen 443 ssl;
+    ssl_certificate /etc/nginx/ssl/public.crt;
+    ssl_certificate_key /etc/nginx/ssl/private.rsa;
+
+    server_name www.domain.org:8080;  // 8080(http) -> 443(https) forward
+    access_log /var/log/nginx/myapp.log;
+    error_log /var/log/nginx/myapp_error.log;
+    # pass the request to the node.js server with the correct headers and much more can be added, see nginx config options
+
+    location /favicon.ico { alias /home/ubuntu/img/favicon_rc.ico; }
+
+    location / {
+      # auth_basic "Restricted";
+      # auth_basic_user_file /home/ubuntu/app/.htpasswd;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_set_header X-NginX-Proxy true;
+      proxy_set_header X-Ssl on;
+
+      proxy_pass https://app_geoforce;
+      proxy_redirect off;
+    }
+}
+
+server {
+    listen 3000 ssl;
+    ssl_certificate /etc/nginx/ssl/public.crt;
+    ssl_certificate_key /etc/nginx/ssl/private.rsa;
+
+    server_name www.domain.org:3001;  // 3000(http) -> 3001(https) forward
+    access_log /var/log/nginx/myapp.log;
+    error_log /var/log/nginx/myapp_error.log;
+    # pass the request to the node.js server with the correct headers and much more can be added, see nginx config options
+
+    location /favicon.ico { alias /home/ubuntu/img/favicon_rc.ico; }
+
+    location / {
+      # auth_basic "Restricted";
+      # auth_basic_user_file /home/ubuntu/app/.htpasswd;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header Host $http_host;
+      proxy_set_header X-NginX-Proxy true;
+      proxy_set_header X-Ssl on;
+
+      proxy_pass https://app_geoforce;
+      proxy_redirect off;
+    }
+}
