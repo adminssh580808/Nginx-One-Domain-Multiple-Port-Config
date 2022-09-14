@@ -58,7 +58,7 @@ server {
  }
  
  
- 2. use server block
+2. use server block
  
 server {
     listen 443 ssl;
